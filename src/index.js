@@ -182,7 +182,7 @@ const app = express();
 app.use(express.json({ limit: '4kb' }));
 
 // CORS — allow webhook calls from any origin (rally app, Cloudflare Pages, etc.)
-// The X-Rally-Secret header still gates actual access; this just lets the browser send the request.
+// The X-Rally-Secret header is still the security gate; this just lets browsers send the request.
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
