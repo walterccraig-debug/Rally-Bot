@@ -181,22 +181,20 @@ setInterval(tickSchedule, 60 * 1000);  // Check every minute
 const app = express();
 
 // CORS — allow webhook calls from any origin. The X-Rally-Secret header is the security gate.
-// Set headers as the FIRST middleware, before json parser, before any route.
+// Pure middleware approach (no app.options route) for Express 4/5 compatibility.
+// This MUST be the very first middleware so it runs before json parser or any route.
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, X-Rally-Secret');
-  res.header('Access-Control-Max-Age', '86400');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Rally-Secret');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Vary', 'Origin');
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    res.end();
+    return;
+  }
   next();
-});
-
-// Explicit handler for preflight on every path, returns immediately
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, X-Rally-Secret');
-  res.header('Access-Control-Max-Age', '86400');
-  res.sendStatus(204);
 });
 
 app.use(express.json({ limit: '4kb' }));
