@@ -112,6 +112,8 @@ async function ensureConnected() {
   connection.subscribe(player);
 
   player.on('error', err => console.error('Player error:', err.message));
+  player.on(AudioPlayerStatus.Playing, () => console.log('[player] now playing'));
+  player.on(AudioPlayerStatus.Idle, () => console.log('[player] idle'));
   connection.on('error', err => console.error('Connection error:', err.message));
   connection.on(VoiceConnectionStatus.Disconnected, async () => {
     try {
@@ -144,11 +146,18 @@ function disconnect() {
 
 function playBell() {
   const now = Date.now();
-  if (now - lastBellAt < BELL_DEBOUNCE_MS) return false;
+  if (now - lastBellAt < BELL_DEBOUNCE_MS) {
+    console.log('[bell] debounced (too soon after last)');
+    return false;
+  }
   lastBellAt = now;
-  if (!player) return false;
+  if (!player) {
+    console.log('[bell] no player available');
+    return false;
+  }
   const resource = createAudioResource(BELL_PATH, { inputType: StreamType.Arbitrary });
   player.play(resource);
+  console.log('[bell] played');
   return true;
 }
 
